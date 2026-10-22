@@ -1,0 +1,42 @@
+import dotenv from "dotenv";
+
+dotenv.config();
+
+export const env = {
+  port: process.env.PORT || 8787,
+  nodeEnv: process.env.NODE_ENV || "development",
+  corsOrigin: process.env.CORS_ORIGIN || "http://localhost:5173",
+  mongodbUri: process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/zentroverse",
+  useMemoryDb: process.env.USE_MEMORY_DB === "true",
+  adminPanelToken: process.env.ADMIN_PANEL_TOKEN || "ZV-ADMIN-2026-DEMO",
+  cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME || "",
+  cloudinaryApiKey: process.env.CLOUDINARY_API_KEY || "",
+  cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET || "",
+  cloudinaryUploadFolder: process.env.CLOUDINARY_UPLOAD_FOLDER || "zentroverse",
+  razorpayKeyId: process.env.RAZORPAY_KEY_ID || "",
+  razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET || "",
+  leadWebhookUrl: process.env.LEAD_WEBHOOK_URL || "",
+  whatsappNotifyUrl: process.env.WHATSAPP_NOTIFY_URL || "",
+  adminNotifyEmail: process.env.ADMIN_NOTIFY_EMAIL || "digital@zentroverse.com",
+  jwtSecret: process.env.JWT_SECRET || "change-me-in-production",
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
+  adminEmail: process.env.ADMIN_EMAIL || "admin@zentroverse.in",
+  adminPassword: process.env.ADMIN_PASSWORD || "Zentro@2026",
+};
+
+function expandZentroverseOrigins(origins) {
+  const set = new Set(origins);
+  for (const origin of origins) {
+    if (origin === "https://zentroverse.com") set.add("https://www.zentroverse.com");
+    if (origin === "https://www.zentroverse.com") set.add("https://zentroverse.com");
+    if (origin === "http://zentroverse.com") set.add("http://www.zentroverse.com");
+    if (origin === "http://www.zentroverse.com") set.add("http://zentroverse.com");
+  }
+  return [...set];
+}
+
+export function getAllowedOrigins() {
+  if (!env.corsOrigin) return true;
+  const list = env.corsOrigin.split(",").map((origin) => origin.trim()).filter(Boolean);
+  return expandZentroverseOrigins(list);
+}

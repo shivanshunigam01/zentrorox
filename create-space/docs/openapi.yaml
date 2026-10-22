@@ -1,0 +1,146 @@
+openapi: 3.0.3
+info:
+  title: Zentroverse Growth Hub — Payment API
+  version: 1.0.0
+  description: |
+    Express server (`server/index.mjs`). Razorpay order creation and payment signature verification.
+    Does not include SPA or localStorage contracts — see API.md.
+
+servers:
+  - url: http://localhost:8787
+    description: Direct API process (development)
+  - url: http://localhost:8080
+    description: Via Vite dev proxy (same-origin /api)
+
+paths:
+  /api/razorpay/create-order:
+    post:
+      summary: Create Razorpay order for a subscription plan
+      operationId: createRazorpayOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - planId
+              properties:
+                planId:
+                  type: string
+                  enum: [starter, growth, pro]
+                  description: Server maps to fixed INR amounts in paise; enterprise is not allowed.
+                email:
+                  type: string
+                  description: Optional; stored in Razorpay order notes (truncated to 120 chars).
+      responses:
+        "200":
+          description: Order created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [orderId, amount, currency, keyId]
+                properties:
+                  orderId:
+                    type: string
+                    example: order_Nnnnnnnnnnnnnn
+                  amount:
+                    type: integer
+                    description: Amount in paise (smallest INR unit)
+                    example: 499900
+                  currency:
+                    type: string
+                    example: INR
+                  keyId:
+                    type: string
+                    description: Razorpay key id (public); safe for Checkout
+        "400":
+          description: Invalid plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorBody"
+        "503":
+          description: Razorpay not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorBody"
+        "500":
+          description: Razorpay or server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorBody"
+
+  /api/razorpay/verify-payment:
+    post:
+      summary: Verify Razorpay payment signature (HMAC-SHA256)
+      operationId: verifyRazorpayPayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - razorpay_order_id
+                - razorpay_payment_id
+                - razorpay_signature
+              properties:
+                razorpay_order_id:
+                  type: string
+                razorpay_payment_id:
+                  type: string
+                razorpay_signature:
+                  type: string
+      responses:
+        "200":
+          description: |
+            Verification result. Invalid signature returns 200 with ok false (see implementation).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    required: [ok]
+                    properties:
+                      ok:
+                        type: boolean
+                        enum: [true, false]
+                  - type: object
+                    required: [ok, error]
+                    properties:
+                      ok:
+                        type: boolean
+                        enum: [false]
+                      error:
+                        type: string
+        "400":
+          description: Missing fields
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, error]
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+                    example: Missing payment fields.
+        "503":
+          description: Server secret missing
+        "500":
+          description: Verification exception
+
+components:
+  schemas:
+    ErrorBody:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string

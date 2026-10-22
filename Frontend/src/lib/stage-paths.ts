@@ -1,0 +1,25 @@
+export const STAGE_UI_PATHS = {
+  BOOKING: 'booking',
+  PICKUP: 'pickup',
+  ARRIVAL: 'gate-in',
+  INVENTORY: 'receiving',
+  VOC: 'inspection',
+  INSPECTION: 'inspection',
+  DIAGNOSIS: 'inspection',
+  ESTIMATE: 'estimate',
+  APPROVAL: 'approval',
+  JOB_CARD: 'job-card',
+  ASSIGNMENT: 'assignment',
+  BAY: 'bay',
+  WIP: 'wip',
+  QC: 'qc',
+  ROAD_TEST: 'qc',
+  INVOICE: 'invoice',
+  PAYMENT: 'payment',
+  GATEPASS: 'gatepass',
+  DELIVERY: 'delivery',
+  FEEDBACK: 'feedback',
+  PSF: 'psf',
+} as const
+
+export type ServiceStageKey = keyof typeof STAGE_UI_PATHS
