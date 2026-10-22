@@ -25,6 +25,7 @@ coverage/
 .env.*
 !.env.example
 !.env.*.example
+!Frontend/.env.production
 Backend/.env
 Frontend/.env
 Frontend/.env.local
